@@ -1,0 +1,13 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "App",
+            "request": "launch",
+            "mainClass": "main.java.App",
+            "projectName": "TextProcessing_9f26c6f8",
+            "vmArgs": "--module-path \"C:/Java/javafx-sdk-24/lib\" --add-modules javafx.controls,javafx.fxml"
+        },
+        
+    ]
+}
