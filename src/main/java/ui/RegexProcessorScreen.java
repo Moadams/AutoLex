@@ -27,10 +27,12 @@ import main.java.controller.TextProcessor;
 public class RegexProcessorScreen{
     private TextField searchField;
     private TextField replacementField;
+    private TextField frequencyField;
     private ComboBox<String> actionDropdown;
     private ComboBox<String> regexDropdown;
     private HBox findReplaceLayout;
     private VBox regexLayout;
+    private VBox frequencyLayout;
     private TextArea inputArea;
     private TextArea resultArea;
     private CheckBox useCustomRegex;
@@ -49,7 +51,7 @@ public class RegexProcessorScreen{
         put("Remove Special Characters", "[^a-zA-Z0-9\\s]");
     }};
 
-    private static final List<String> regexActionsTemplate = List.of("Choose an action", "Perform special operation", "Find And Replace All","Word Count" );
+    private static final List<String> regexActionsTemplate = List.of("Choose an action", "Perform special operation", "Find And Replace All","Word Count","Top Frequent Words" );
 
     public RegexProcessorScreen(RegexProcessor regexProcessor, TextProcessor textProcessor) {
         this.regexProcessor = regexProcessor;
@@ -67,13 +69,14 @@ public class RegexProcessorScreen{
         createActionDropdown();
         createFindReplaceLayout();
         createRegexLayout();
+        createFrequencyLayout();
         resultArea = createResultArea();
         Button applyButton = createApplyButton();
         Button uploadButton = createUploadButton(inputArea);
         Button saveButton = createSaveButton(resultArea);
 
 
-        processorLayout.getChildren().addAll(title, inputArea, uploadButton, actionDropdown, findReplaceLayout, regexLayout, applyButton, resultArea, saveButton);
+        processorLayout.getChildren().addAll(title, inputArea, uploadButton, actionDropdown,frequencyLayout, findReplaceLayout, regexLayout, applyButton, resultArea, saveButton);
         updateUIBasedOnOperation();
         return processorLayout;
     }
@@ -114,6 +117,9 @@ public class RegexProcessorScreen{
                     break;
                 case "Word Count":
                     performWordCount();
+                    break;
+                case "Top Frequent Words":
+                    performTopFrequentWords();
                     break;
                 default:
                     break;
@@ -211,6 +217,17 @@ public class RegexProcessorScreen{
         regexLayout.getChildren().addAll(regexDropdown, useCustomRegex, customRegexField);
     }
 
+    public VBox createFrequencyLayout(){
+        frequencyLayout = new VBox(5);
+
+        frequencyField = new TextField();
+        frequencyField.setPromptText("E.g 10");
+        frequencyField.setPrefWidth(200);
+
+        frequencyLayout.getChildren().addAll(frequencyField);
+        return frequencyLayout;
+    }
+
     public void createActionDropdown(){
         actionDropdown = new ComboBox<>();
         actionDropdown.getItems().addAll(regexActionsTemplate);
@@ -221,7 +238,7 @@ public class RegexProcessorScreen{
    
     public void updateUIBasedOnOperation(){
         String selectedAction = actionDropdown.getValue();
-        findReplaceLayout.setVisible(false);
+        
 
         switch (selectedAction) {
             case "Choose an action":
@@ -229,18 +246,31 @@ public class RegexProcessorScreen{
                 regexLayout.setManaged(false);
                 findReplaceLayout.setVisible(false);
                 regexLayout.setVisible(false);
+                frequencyLayout.setManaged(false);
+                frequencyLayout.setVisible(false);
                 break;
             case "Perform special operation":
                 findReplaceLayout.setManaged(false);
                 regexLayout.setManaged(true);
                 regexLayout.setVisible(true);
                 findReplaceLayout.setVisible(false);
+                frequencyLayout.setManaged(false);
+                frequencyLayout.setVisible(false);
                 break;
             case "Find And Replace All":
                 findReplaceLayout.setManaged(true);
                 regexLayout.setManaged(false);
                 regexLayout.setVisible(false);
                 findReplaceLayout.setVisible(true);
+                frequencyLayout.setManaged(false);
+                frequencyLayout.setVisible(false);
+            case "Top Frequent Words":
+                frequencyLayout.setManaged(true);
+                frequencyLayout.setVisible(true);
+                findReplaceLayout.setManaged(false);
+                regexLayout.setManaged(false);
+                regexLayout.setVisible(false);
+                findReplaceLayout.setVisible(false);
                 break;
         
             default:
@@ -307,6 +337,38 @@ public class RegexProcessorScreen{
                                  .append(": ")
                                  .append(entry.getValue())
                                  .append("\n"));
+            resultArea.setText(resultBuilder.toString());
+        }
+    }
+
+    public void performTopFrequentWords() {
+        String text = inputArea.getText();
+        if (text.isEmpty()) {
+            resultArea.setText("Please enter text.");
+            return;
+        }
+    
+        int topN = 10; // default
+        try {
+            String topNInput = frequencyField.getText();
+            if (!topNInput.isEmpty()) {
+                topN = Integer.parseInt(topNInput);
+                if (topN <= 0) throw new NumberFormatException();
+            }
+        } catch (NumberFormatException e) {
+            resultArea.setText("Invalid number for Top N. Please enter a positive integer.");
+            return;
+        }
+    
+        List<Map.Entry<String, Long>> topWords = textProcessor.getTopFrequentWords(text, topN);
+    
+        if (topWords.isEmpty()) {
+            resultArea.setText("No words found.");
+        } else {
+            StringBuilder resultBuilder = new StringBuilder("Top " + topN + " Frequent Words:\n");
+            for (Map.Entry<String, Long> entry : topWords) {
+                resultBuilder.append(entry.getKey()).append(": ").append(entry.getValue()).append("\n");
+            }
             resultArea.setText(resultBuilder.toString());
         }
     }
