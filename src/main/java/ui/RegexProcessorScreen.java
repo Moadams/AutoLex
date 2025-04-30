@@ -22,6 +22,7 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import main.java.controller.RegexProcessor;
+import main.java.controller.TextProcessor;
 
 public class RegexProcessorScreen{
     private TextField searchField;
@@ -36,6 +37,8 @@ public class RegexProcessorScreen{
     private TextField customRegexField;
 
     private final RegexProcessor regexProcessor;
+    private final TextProcessor textProcessor;
+
     private static final Map<String, String> regexTemplates = new LinkedHashMap<>() {{
         put("Extract Emails", "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}");
         put("Extract Phone Numbers", "\\+?\\d[\\d\\s()-]{8,}");
@@ -46,10 +49,11 @@ public class RegexProcessorScreen{
         put("Remove Special Characters", "[^a-zA-Z0-9\\s]");
     }};
 
-    private static final List<String> regexActionsTemplate = List.of("Choose an action", "Perform special operation", "Find And Replace All" );
+    private static final List<String> regexActionsTemplate = List.of("Choose an action", "Perform special operation", "Find And Replace All","Word Count" );
 
-    public RegexProcessorScreen(RegexProcessor regexProcessor) {
+    public RegexProcessorScreen(RegexProcessor regexProcessor, TextProcessor textProcessor) {
         this.regexProcessor = regexProcessor;
+        this.textProcessor = textProcessor;
     }
 
     public VBox getLayout(){
@@ -107,6 +111,9 @@ public class RegexProcessorScreen{
                     break;
                 case "Find And Replace All":
                     findAndReplaceAll();
+                    break;
+                case "Word Count":
+                    performWordCount();
                     break;
                 default:
                     break;
@@ -277,6 +284,30 @@ public class RegexProcessorScreen{
             
         } catch (Exception ex) {
             resultArea.setText("Invalid regex or error occurred. Please check your input.");
+        }
+    }
+
+    public void performWordCount() {
+        String text = inputArea.getText();
+        if (text.isEmpty()) {
+            resultArea.setText("Please enter some text.");
+            return;
+        }
+    
+        Map<String, Long> wordCounts = textProcessor.countWords(text);
+    
+        if (wordCounts.isEmpty()) {
+            resultArea.setText("No words found.");
+        } else {
+            StringBuilder resultBuilder = new StringBuilder("Word Frequencies:\n");
+            wordCounts.entrySet().stream()
+                .sorted(Map.Entry.<String, Long>comparingByValue().reversed()) // sort by frequency
+                .forEach(entry -> 
+                    resultBuilder.append(entry.getKey())
+                                 .append(": ")
+                                 .append(entry.getValue())
+                                 .append("\n"));
+            resultArea.setText(resultBuilder.toString());
         }
     }
 }
