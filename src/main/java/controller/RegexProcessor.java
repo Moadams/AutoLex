@@ -18,7 +18,7 @@ public class RegexProcessor{
         Pattern pattern = Pattern.compile(regex);
         Matcher matcher = pattern.matcher(text);
         
-        if(matcher.find()){
+        while(matcher.find()){
             matches.add(matcher.group());
         }
         return matches;
