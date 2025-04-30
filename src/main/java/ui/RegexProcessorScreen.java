@@ -1,0 +1,282 @@
+package main.java.ui;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+import javafx.geometry.Insets;
+import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.Text;
+import javafx.stage.FileChooser;
+import main.java.controller.RegexProcessor;
+
+public class RegexProcessorScreen{
+    private TextField searchField;
+    private TextField replacementField;
+    private ComboBox<String> actionDropdown;
+    private ComboBox<String> regexDropdown;
+    private HBox findReplaceLayout;
+    private VBox regexLayout;
+    private TextArea inputArea;
+    private TextArea resultArea;
+    private CheckBox useCustomRegex;
+    private TextField customRegexField;
+
+    private final RegexProcessor regexProcessor;
+    private static final Map<String, String> regexTemplates = new LinkedHashMap<>() {{
+        put("Extract Emails", "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}");
+        put("Extract Phone Numbers", "\\+?\\d[\\d\\s()-]{8,}");
+        put("Remove HTML Tags", "<[^>]+>");
+        put("Extract Dates (dd/mm/yyyy)", "\\b\\d{2}/\\d{2}/\\d{4}\\b");
+        put("Extract Capitalized Words", "\\b[A-Z][a-z]+\\b");
+        put("Extract Numbers", "\\b\\d+\\b");
+        put("Remove Special Characters", "[^a-zA-Z0-9\\s]");
+    }};
+
+    private static final List<String> regexActionsTemplate = List.of("Choose an action", "Perform special operation", "Find And Replace All" );
+
+    public RegexProcessorScreen(RegexProcessor regexProcessor) {
+        this.regexProcessor = regexProcessor;
+    }
+
+    public VBox getLayout(){
+        VBox processorLayout = new VBox(10);
+        processorLayout.setPadding(new Insets(20));
+        Text title = new Text("Regex Text Processor");
+        title.setFont(Font.font("Arial", 28));
+        title.setFill(Color.web("#2c3e50"));
+
+        inputArea = createInputArea();
+        createActionDropdown();
+        createFindReplaceLayout();
+        createRegexLayout();
+        resultArea = createResultArea();
+        Button applyButton = createApplyButton();
+        Button uploadButton = createUploadButton(inputArea);
+        Button saveButton = createSaveButton(resultArea);
+
+
+        processorLayout.getChildren().addAll(title, inputArea, uploadButton, actionDropdown, findReplaceLayout, regexLayout, applyButton, resultArea, saveButton);
+        updateUIBasedOnOperation();
+        return processorLayout;
+    }
+
+    public TextArea createInputArea(){
+
+        inputArea = new TextArea();
+        inputArea.setPromptText("Enter or paste your text here...");
+        inputArea.setWrapText(true);
+        inputArea.setPrefHeight(200);
+
+        return inputArea;
+    }
+
+    public TextArea createResultArea(){
+        TextArea resultArea = new TextArea();
+        resultArea.setEditable(false);
+        resultArea.setWrapText(true);
+        resultArea.setPromptText("Results will appear here...");
+        resultArea.setPrefHeight(200);
+        return resultArea;
+    }
+
+    public Button createApplyButton(){
+        Button applyButton = new Button("Apply");
+        applyButton.setStyle("-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 8px 16px;");
+
+        applyButton.setOnAction(e -> {
+            // get action
+            String selectedAction = actionDropdown.getValue();
+            
+            switch (selectedAction) {
+                case "Perform special operation":
+                    findAllMatches();
+                    break;
+                case "Find And Replace All":
+                    findAndReplaceAll();
+                    break;
+                default:
+                    break;
+            }
+            
+        });
+
+        return applyButton;
+    }
+
+    public Button createUploadButton(TextArea inputArea) {
+        Button uploadButton = new Button("Upload File");
+        uploadButton.setStyle("-fx-background-color: #547792; -fx-text-fill: white; -fx-font-size: 14px;");
+
+        uploadButton.setOnAction(e -> {
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Open Text File");
+            fileChooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("Text Files", "*.txt")
+            );
+
+            File selectedFile = fileChooser.showOpenDialog(null);
+            if (selectedFile != null) {
+                try (BufferedReader reader = new BufferedReader(new FileReader(selectedFile))) {
+                    StringBuilder content = new StringBuilder();
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        content.append(line).append("\n");
+                    }
+                    inputArea.setText(content.toString());
+                } catch (IOException ex) {
+                    inputArea.setText("Error reading file: " + ex.getMessage());
+                }
+            }
+        });
+
+        return uploadButton;
+    }
+
+    public Button createSaveButton(TextArea resultArea) {
+        Button saveButton = new Button("Save Output");
+        saveButton.setStyle("-fx-background-color: #102E50; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 8px 16px;");
+
+        saveButton.setOnAction(e -> {
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Save Output File");
+            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Text Files", "*.txt"));
+            fileChooser.setInitialFileName("output.txt");
+
+            File file = fileChooser.showSaveDialog(null);
+            if (file != null) {
+                try (FileWriter writer = new FileWriter(file)) {
+                    writer.write(resultArea.getText());
+                } catch (IOException ex) {
+                    resultArea.setText("Failed to save file: " + ex.getMessage());
+                }
+            }
+        });
+
+        return saveButton;
+    }
+
+    public void createFindReplaceLayout(){
+        findReplaceLayout = new HBox(10);
+
+        searchField = new TextField();
+        searchField.setPromptText("Enter search text here...");
+        searchField.setPrefWidth(200);
+
+        replacementField = new TextField();
+        replacementField.setPromptText("Enter replacement text here...");
+        replacementField.setPrefWidth(200);
+
+        findReplaceLayout.getChildren().addAll(searchField, replacementField);
+    }
+
+    public void createRegexLayout(){
+        regexLayout = new VBox(10);
+
+        regexDropdown = new ComboBox<>();
+        regexDropdown.getItems().addAll(regexTemplates.keySet());
+        regexDropdown.setPromptText("Choose a predefined text operation");
+        regexDropdown.setPrefWidth(300);
+
+        useCustomRegex = new CheckBox("Use custom regex");
+        customRegexField = new TextField();
+        customRegexField.setPromptText("Enter custom regex here...");
+        customRegexField.setDisable(true);
+        customRegexField.setPrefWidth(300);
+
+        useCustomRegex.selectedProperty().addListener((obs, oldVal, newVal) -> {
+            customRegexField.setDisable(!newVal);
+        });
+
+        regexLayout.getChildren().addAll(regexDropdown, useCustomRegex, customRegexField);
+    }
+
+    public void createActionDropdown(){
+        actionDropdown = new ComboBox<>();
+        actionDropdown.getItems().addAll(regexActionsTemplate);
+        actionDropdown.setPrefWidth(200);
+        actionDropdown.setValue("Choose an action");
+        actionDropdown.setOnAction(e -> updateUIBasedOnOperation());
+    }
+   
+    public void updateUIBasedOnOperation(){
+        String selectedAction = actionDropdown.getValue();
+        findReplaceLayout.setVisible(false);
+
+        switch (selectedAction) {
+            case "Choose an action":
+                findReplaceLayout.setManaged(false);
+                regexLayout.setManaged(false);
+                findReplaceLayout.setVisible(false);
+                regexLayout.setVisible(false);
+                break;
+            case "Perform special operation":
+                findReplaceLayout.setManaged(false);
+                regexLayout.setManaged(true);
+                regexLayout.setVisible(true);
+                findReplaceLayout.setVisible(false);
+                break;
+            case "Find And Replace All":
+                findReplaceLayout.setManaged(true);
+                regexLayout.setManaged(false);
+                regexLayout.setVisible(false);
+                findReplaceLayout.setVisible(true);
+                break;
+        
+            default:
+                break;
+        }
+
+    }
+
+    public void findAllMatches(){
+        String text = inputArea.getText();
+        String regex = useCustomRegex.isSelected() ? customRegexField.getText() : regexTemplates.get(regexDropdown.getValue());
+        
+        if (text.isEmpty() || regex == null || regex.isEmpty()) {
+            resultArea.setText("Please enter text and select a valid regex.");
+            return;
+        }
+
+        try {
+            List<String> matches = regexProcessor.findMatches(text, regex);
+            System.out.println(matches.size());
+            resultArea.setText(matches.size() > 0 ? String.join("\n", matches) : "No matches found.");
+            
+        } catch (Exception ex) {
+            resultArea.setText("Invalid regex or error occurred. Please check your input.");
+        }
+    }
+
+    public void findAndReplaceAll(){
+        String text = inputArea.getText();
+        String maintext = searchField.getText();
+        String replacement = replacementField.getText();
+
+        if (text.isEmpty() || replacement.isEmpty()) {
+            resultArea.setText("Please enter text, and enter a replacement.");
+            return;
+        }
+
+        try {
+            String modifiedText = regexProcessor.replaceMatches(text, maintext, replacement);
+            resultArea.setText(modifiedText);
+            
+        } catch (Exception ex) {
+            resultArea.setText("Invalid regex or error occurred. Please check your input.");
+        }
+    }
+}
