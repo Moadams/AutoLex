@@ -19,7 +19,6 @@ public class AppMenuBar {
 
         // Create Menus
         Menu fileMenu = new Menu("File");
-        Menu editMenu = new Menu("Edit");
         Menu helpMenu = new Menu("Help");
 
         // create menu items for file menu
@@ -35,14 +34,6 @@ public class AppMenuBar {
         // add menu items to file menu
         fileMenu.getItems().addAll(openItem,openMultipleItems, saveItem, exitItem);
 
-        // create menu items for edit menu
-        MenuItem undoItem = new MenuItem("Undo");
-        MenuItem redoItem = new MenuItem("Redo");
-        MenuItem cutItem = new MenuItem("Cut");
-        MenuItem copyItem = new MenuItem("Copy");
-        MenuItem pasteItem = new MenuItem("Paste");
-
-        editMenu.getItems().addAll(undoItem, redoItem, cutItem, copyItem, pasteItem);
 
         // create menu items for edit menu
         MenuItem aboutItem = new MenuItem("About");
@@ -57,7 +48,7 @@ public class AppMenuBar {
         });
 
         // Add Menus to MenuBar
-        menuBar.getMenus().addAll(fileMenu, editMenu, helpMenu);
+        menuBar.getMenus().addAll(fileMenu, helpMenu);
 
         return menuBar;
     }

@@ -40,10 +40,11 @@ public class MainScreen{
         // Add Regex Tab
         TabPane tabPane = new TabPane();
         Tab regexTab = new Tab("Regex Engine", regexUI.getLayout());
+        Tab dataTab = new Tab("Data Manager", new DataManagerScreen().getLayout());
         
         
 
-        tabPane.getTabs().addAll(regexTab);
+        tabPane.getTabs().addAll(regexTab, dataTab);
         tabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE); // Prevent closing
         mainLayout.getChildren().add(tabPane);
 
