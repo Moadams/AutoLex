@@ -23,9 +23,10 @@ public class MainScreen{
         VBox mainLayout = new VBox(10);
         mainLayout.setAlignment(Pos.CENTER);
         
+        RegexProcessorScreen regexUI = new RegexProcessorScreen(regexProcessor, textProcessor, fileProcessor);
 
         // create and use the menu bar
-        AppMenuBar appMenuBar = new AppMenuBar();
+        AppMenuBar appMenuBar = new AppMenuBar(regexUI);
         MenuBar menuBar = appMenuBar.createMenuBar(stage);
         
         // Combine in BorderPane
@@ -34,10 +35,9 @@ public class MainScreen{
         rootLayout.setCenter(mainLayout);
 
 
-        TabPane tabPane = new TabPane();
-
+        
         // Add Regex Tab
-        RegexProcessorScreen regexUI = new RegexProcessorScreen(regexProcessor, textProcessor, fileProcessor);
+        TabPane tabPane = new TabPane();
         Tab regexTab = new Tab("Regex Engine", regexUI.getLayout());
         
 

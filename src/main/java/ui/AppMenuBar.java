@@ -7,7 +7,13 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.layout.Region;
 import javafx.stage.Stage;
 
-public class AppMenuBar {
+public class AppMenuBar {   
+    private RegexProcessorScreen screen;
+
+    public AppMenuBar(RegexProcessorScreen screen) {
+        this.screen = screen;
+    }
+
     public MenuBar createMenuBar(Stage appStage) {
         MenuBar menuBar = new MenuBar();
 
@@ -21,6 +27,8 @@ public class AppMenuBar {
         MenuItem saveItem = new MenuItem("Save");
         MenuItem exitItem = new MenuItem("Exit");
         exitItem.setOnAction(e-> appStage.close());
+
+        openItem.setOnAction(e-> screen.uploadFile());
 
         // add menu items to file menu
         fileMenu.getItems().addAll(openItem, saveItem, exitItem);

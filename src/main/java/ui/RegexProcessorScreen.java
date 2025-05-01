@@ -1,8 +1,7 @@
 package main.java.ui;
 
-import java.io.BufferedReader;
+
 import java.io.File;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.LinkedHashMap;
@@ -81,11 +80,10 @@ public class RegexProcessorScreen{
         createFilterLayout();
         resultArea = createResultArea();
         Button applyButton = createApplyButton();
-        Button uploadButton = createUploadButton(inputArea);
         Button saveButton = createSaveButton(resultArea);
 
 
-        processorLayout.getChildren().addAll(title, inputArea, uploadButton, actionDropdown,frequencyLayout,filterLayout, sentenceLimitLayout, findReplaceLayout, regexLayout, applyButton, resultArea, saveButton);
+        processorLayout.getChildren().addAll(title, inputArea, actionDropdown,frequencyLayout,filterLayout, sentenceLimitLayout, findReplaceLayout, regexLayout, applyButton, resultArea, saveButton);
         updateUIBasedOnOperation();
         return processorLayout;
     }
@@ -146,12 +144,10 @@ public class RegexProcessorScreen{
         return applyButton;
     }
 
-    public Button createUploadButton(TextArea inputArea) {
-        Button uploadButton = new Button("Upload File");
-        uploadButton.setStyle("-fx-background-color: #547792; -fx-text-fill: white; -fx-font-size: 14px;");
+    
 
-        uploadButton.setOnAction(e -> {
-            FileChooser fileChooser = new FileChooser();
+    public void uploadFile(){
+        FileChooser fileChooser = new FileChooser();
             fileChooser.setTitle("Open Text File");
             fileChooser.getExtensionFilters().addAll(
                 new FileChooser.ExtensionFilter("Text Files", "*.txt")
@@ -167,9 +163,6 @@ public class RegexProcessorScreen{
                 }
                 
             }
-        });
-
-        return uploadButton;
     }
 
     public Button createSaveButton(TextArea resultArea) {
