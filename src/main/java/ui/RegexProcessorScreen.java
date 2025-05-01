@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javafx.geometry.Insets;
 import javafx.scene.control.Button;
@@ -483,5 +484,28 @@ public class RegexProcessorScreen{
             }
         }
     }
-        
+    
+    public void readMultipleFiles() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Select Text Files");
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Text Files", "*.txt"));
+
+        List<File> selectedFiles = fileChooser.showOpenMultipleDialog(null);
+        if (selectedFiles != null && !selectedFiles.isEmpty()) {
+            List<String> paths = selectedFiles.stream()
+                                            .map(File::getAbsolutePath)
+                                            .collect(Collectors.toList());
+            try {
+                List<String> fileContents = fileProcessor.batchReadMultipleFiles(paths);
+                String combined = String.join("\n--- End of File ---\n", fileContents);
+                inputArea.setText(combined); // show combined content in the text area
+            } catch (IOException e) {
+                inputArea.setText("Error reading files: " + e.getMessage());
+            }
+        } else {
+            inputArea.setText("No files selected.");
+        }
+    }
+
+
 }

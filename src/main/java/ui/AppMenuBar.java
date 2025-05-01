@@ -24,14 +24,16 @@ public class AppMenuBar {
 
         // create menu items for file menu
         MenuItem openItem = new MenuItem("Open");
+        MenuItem openMultipleItems = new MenuItem("Open Multiple");
         MenuItem saveItem = new MenuItem("Save");
         MenuItem exitItem = new MenuItem("Exit");
         exitItem.setOnAction(e-> appStage.close());
         openItem.setOnAction(e-> screen.uploadFile());
+        openMultipleItems.setOnAction(e-> screen.readMultipleFiles());
         saveItem.setOnAction(e-> screen.saveFile());
 
         // add menu items to file menu
-        fileMenu.getItems().addAll(openItem, saveItem, exitItem);
+        fileMenu.getItems().addAll(openItem,openMultipleItems, saveItem, exitItem);
 
         // create menu items for edit menu
         MenuItem undoItem = new MenuItem("Undo");
