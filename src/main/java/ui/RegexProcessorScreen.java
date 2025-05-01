@@ -23,6 +23,7 @@ import javafx.stage.FileChooser;
 import main.java.controller.FileProcessor;
 import main.java.controller.RegexProcessor;
 import main.java.controller.TextProcessor;
+import main.java.utils.LoggerUtility;
 
 public class RegexProcessorScreen{
     private TextField searchField;
@@ -45,6 +46,7 @@ public class RegexProcessorScreen{
     private final RegexProcessor regexProcessor;
     private final TextProcessor textProcessor;
     private final FileProcessor fileProcessor;
+    private final LoggerUtility loggerUtility;
 
     private static final Map<String, String> regexTemplates = new LinkedHashMap<>() {{
         put("Extract Emails", "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}");
@@ -62,9 +64,11 @@ public class RegexProcessorScreen{
         this.regexProcessor = regexProcessor;
         this.textProcessor = textProcessor;
         this.fileProcessor = fileProcessor;
+        this.loggerUtility = new LoggerUtility(fileProcessor);
     }
 
     public VBox getLayout(){
+        
         VBox processorLayout = new VBox(10);
         processorLayout.setPadding(new Insets(20));
         Text title = new Text("Regex Text Processor");
@@ -159,6 +163,7 @@ public class RegexProcessorScreen{
                     String content = fileProcessor.readFile(selectedFile.getAbsolutePath());
                     inputArea.setText(content);
                 }catch(IOException ex){
+                    loggerUtility.logError("Error reading file: ", ex);
                     inputArea.setText("Error reading file: " + ex.getMessage());
                 }
                 
