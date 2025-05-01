@@ -21,6 +21,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
+import main.java.controller.FileProcessor;
 import main.java.controller.RegexProcessor;
 import main.java.controller.TextProcessor;
 
@@ -44,6 +45,7 @@ public class RegexProcessorScreen{
 
     private final RegexProcessor regexProcessor;
     private final TextProcessor textProcessor;
+    private final FileProcessor fileProcessor;
 
     private static final Map<String, String> regexTemplates = new LinkedHashMap<>() {{
         put("Extract Emails", "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}");
@@ -57,9 +59,10 @@ public class RegexProcessorScreen{
 
     private static final List<String> regexActionsTemplate = List.of("Choose an action", "Perform special operation", "Find And Replace All","Word Count","Top Frequent Words","Summarize Text","Filter Lines by Keyword" );
 
-    public RegexProcessorScreen(RegexProcessor regexProcessor, TextProcessor textProcessor) {
+    public RegexProcessorScreen(RegexProcessor regexProcessor, TextProcessor textProcessor, FileProcessor fileProcessor) {
         this.regexProcessor = regexProcessor;
         this.textProcessor = textProcessor;
+        this.fileProcessor = fileProcessor;
     }
 
     public VBox getLayout(){
@@ -156,16 +159,13 @@ public class RegexProcessorScreen{
 
             File selectedFile = fileChooser.showOpenDialog(null);
             if (selectedFile != null) {
-                try (BufferedReader reader = new BufferedReader(new FileReader(selectedFile))) {
-                    StringBuilder content = new StringBuilder();
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        content.append(line).append("\n");
-                    }
-                    inputArea.setText(content.toString());
-                } catch (IOException ex) {
+                try {
+                    String content = fileProcessor.readFile(selectedFile.getAbsolutePath());
+                    inputArea.setText(content);
+                }catch(IOException ex){
                     inputArea.setText("Error reading file: " + ex.getMessage());
                 }
+                
             }
         });
 
