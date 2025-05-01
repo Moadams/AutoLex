@@ -25,6 +25,7 @@ public class MainScreen{
         
         RegexProcessorScreen regexUI = new RegexProcessorScreen(regexProcessor, textProcessor, fileProcessor);
 
+
         // create and use the menu bar
         AppMenuBar appMenuBar = new AppMenuBar(regexUI);
         MenuBar menuBar = appMenuBar.createMenuBar(stage);
@@ -39,6 +40,7 @@ public class MainScreen{
         // Add Regex Tab
         TabPane tabPane = new TabPane();
         Tab regexTab = new Tab("Regex Engine", regexUI.getLayout());
+        
         
 
         tabPane.getTabs().addAll(regexTab);

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 public class RegexProcessor{
     /**
@@ -48,5 +49,20 @@ public class RegexProcessor{
         Pattern pattern = Pattern.compile(regex);
         Matcher matcher = pattern.matcher(text);
         return matcher.find();
+    }
+
+    /**
+     * Checks if a given regex pattern is valid
+     *
+     * @param pattern the regex pattern to check
+     * @return true if the pattern is valid, false otherwise
+     */
+    public boolean isValidRegex(String pattern) {
+        try {
+            Pattern.compile(pattern);
+            return true;
+        } catch (PatternSyntaxException e) {
+            return false;
+        }
     }
 }

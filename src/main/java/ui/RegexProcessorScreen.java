@@ -16,6 +16,7 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
@@ -52,11 +53,8 @@ public class RegexProcessorScreen{
     private static final Map<String, String> regexTemplates = new LinkedHashMap<>() {{
         put("Extract Emails", "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}");
         put("Extract Phone Numbers", "\\+?\\d[\\d\\s()-]{8,}");
-        put("Remove HTML Tags", "<[^>]+>");
         put("Extract Dates (dd/mm/yyyy)", "\\b\\d{2}/\\d{2}/\\d{4}\\b");
-        put("Extract Capitalized Words", "\\b[A-Z][a-z]+\\b");
         put("Extract Numbers", "\\b\\d+\\b");
-        put("Remove Special Characters", "[^a-zA-Z0-9\\s]");
     }};
 
     private static final List<String> regexActionsTemplate = List.of("Choose an action", "Perform special operation", "Find And Replace All","Word Count","Top Frequent Words","Summarize Text","Filter Lines by Keyword" );
@@ -72,7 +70,12 @@ public class RegexProcessorScreen{
         
         VBox processorLayout = new VBox(10);
         processorLayout.setPadding(new Insets(20));
-        Text title = new Text("Regex Text Processor");
+
+        Text title = new Text("Regex Processor");
+        title.setStyle("-fx-font-size: 24px; -fx-fill: white; -fx-font-weight: bold;");
+        StackPane titleContainer = new StackPane(title);
+        titleContainer.setStyle("-fx-background-color: linear-gradient(to right, #4CAF50, #2E7D32); " + "-fx-padding: 20px; ");
+
         title.setFont(Font.font("Arial", 28));
         title.setFill(Color.web("#2c3e50"));
 
@@ -88,7 +91,7 @@ public class RegexProcessorScreen{
         
 
 
-        processorLayout.getChildren().addAll(title, inputArea, actionDropdown,frequencyLayout,filterLayout, sentenceLimitLayout, findReplaceLayout, regexLayout, applyButton, resultArea);
+        processorLayout.getChildren().addAll(titleContainer, inputArea, actionDropdown,frequencyLayout,filterLayout, sentenceLimitLayout, findReplaceLayout, regexLayout, applyButton, resultArea);
         updateUIBasedOnOperation();
         return processorLayout;
     }
@@ -343,6 +346,12 @@ public class RegexProcessorScreen{
         String text = inputArea.getText();
         String regex = useCustomRegex.isSelected() ? customRegexField.getText() : regexTemplates.get(regexDropdown.getValue());
         
+        // validate regex
+        if (!regexProcessor.isValidRegex(regex)) {
+            resultArea.setText("Invalid regex. Please check your input.");
+            return;
+        }
+
         if (text.isEmpty() || regex == null || regex.isEmpty()) {
             resultArea.setText("Please enter text and select a valid regex.");
             return;
@@ -350,7 +359,6 @@ public class RegexProcessorScreen{
 
         try {
             List<String> matches = regexProcessor.findMatches(text, regex);
-            System.out.println(matches.size());
             resultArea.setText(matches.size() > 0 ? String.join("\n", matches) : "No matches found.");
             
         } catch (Exception ex) {

@@ -59,18 +59,5 @@ public class FileProcessor{
         ).collect(Collectors.toList());
     }
 
-    /**
-     * Writes the given contents to multiple files at the given paths, overwriting any existing files if they exist.
-     * @param filePaths a list of file paths to write
-     * @param contents a list of contents to write to the files
-     * @throws IOException if an error occurs while writing any of the files
-     * @throws RuntimeException if the lists of file paths and contents are not of equal length
-     */
-    public void batchWriteMultipleFiles(List<String> filePaths, List<String> contents) throws IOException {
-        if(filePaths.size() != contents.size()) throw new RuntimeException("Number of file paths and contents must be equal.");
-
-        for (int i = 0; i < filePaths.size(); i++) {
-            writeFile(filePaths.get(i), contents.get(i));
-        }
-    }
+    
 }
