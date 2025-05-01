@@ -170,19 +170,7 @@ public class RegexProcessorScreen{
         saveButton.setStyle("-fx-background-color: #102E50; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 8px 16px;");
 
         saveButton.setOnAction(e -> {
-            FileChooser fileChooser = new FileChooser();
-            fileChooser.setTitle("Save Output File");
-            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Text Files", "*.txt"));
-            fileChooser.setInitialFileName("output.txt");
-
-            File file = fileChooser.showSaveDialog(null);
-            if (file != null) {
-                try (FileWriter writer = new FileWriter(file)) {
-                    writer.write(resultArea.getText());
-                } catch (IOException ex) {
-                    resultArea.setText("Failed to save file: " + ex.getMessage());
-                }
-            }
+            saveFile();
         });
 
         return saveButton;
@@ -484,4 +472,20 @@ public class RegexProcessorScreen{
         resultArea.setText(filtered.isEmpty() ? "No matching lines found." : String.join("\n", filtered));
     }
     
+    public void saveFile(){
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Save Output File");
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Text Files", "*.txt"));
+        fileChooser.setInitialFileName("output.txt");
+
+        File file = fileChooser.showSaveDialog(null);
+        if (file != null) {
+            try {
+                fileProcessor.writeFile(file.getAbsolutePath(), resultArea.getText());
+            } catch (IOException ex) {
+                resultArea.setText("Failed to save file: " + ex.getMessage());
+            }
+        }
+    }
+        
 }
