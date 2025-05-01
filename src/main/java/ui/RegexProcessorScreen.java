@@ -29,12 +29,14 @@ public class RegexProcessorScreen{
     private TextField replacementField;
     private TextField frequencyField;
     private TextField sentenceLimitField;
+    private TextField filterField;
     private ComboBox<String> actionDropdown;
     private ComboBox<String> regexDropdown;
     private HBox findReplaceLayout;
     private VBox regexLayout;
     private VBox frequencyLayout;
     private VBox sentenceLimitLayout;
+    private VBox filterLayout;
     private TextArea inputArea;
     private TextArea resultArea;
     private CheckBox useCustomRegex;
@@ -53,7 +55,7 @@ public class RegexProcessorScreen{
         put("Remove Special Characters", "[^a-zA-Z0-9\\s]");
     }};
 
-    private static final List<String> regexActionsTemplate = List.of("Choose an action", "Perform special operation", "Find And Replace All","Word Count","Top Frequent Words","Summarize Text" );
+    private static final List<String> regexActionsTemplate = List.of("Choose an action", "Perform special operation", "Find And Replace All","Word Count","Top Frequent Words","Summarize Text","Filter Lines by Keyword" );
 
     public RegexProcessorScreen(RegexProcessor regexProcessor, TextProcessor textProcessor) {
         this.regexProcessor = regexProcessor;
@@ -73,13 +75,14 @@ public class RegexProcessorScreen{
         createRegexLayout();
         createFrequencyLayout();
         createSentenceLimitLayout();
+        createFilterLayout();
         resultArea = createResultArea();
         Button applyButton = createApplyButton();
         Button uploadButton = createUploadButton(inputArea);
         Button saveButton = createSaveButton(resultArea);
 
 
-        processorLayout.getChildren().addAll(title, inputArea, uploadButton, actionDropdown,frequencyLayout, sentenceLimitLayout, findReplaceLayout, regexLayout, applyButton, resultArea, saveButton);
+        processorLayout.getChildren().addAll(title, inputArea, uploadButton, actionDropdown,frequencyLayout,filterLayout, sentenceLimitLayout, findReplaceLayout, regexLayout, applyButton, resultArea, saveButton);
         updateUIBasedOnOperation();
         return processorLayout;
     }
@@ -127,6 +130,10 @@ public class RegexProcessorScreen{
                 case "Summarize Text":
                     performSummarizeText();
                     break;
+                case "Filter Lines by Keyword":
+                    filterLinesByKeyword();
+                    break;
+
                 default:
                     break;
             }
@@ -243,6 +250,15 @@ public class RegexProcessorScreen{
         return sentenceLimitLayout;
     }
 
+    public VBox createFilterLayout(){
+        filterLayout = new VBox(5);
+        filterField = new TextField();
+        filterField.setPromptText("Enter filter keyword");
+        filterField.setPrefWidth(200);
+        filterLayout.getChildren().addAll(filterField);
+        return filterLayout;
+    }
+
     public void createActionDropdown(){
         actionDropdown = new ComboBox<>();
         actionDropdown.getItems().addAll(regexActionsTemplate);
@@ -265,6 +281,8 @@ public class RegexProcessorScreen{
                 frequencyLayout.setVisible(false);
                 sentenceLimitLayout.setManaged(false);
                 sentenceLimitLayout.setVisible(false);
+                filterLayout.setManaged(false);
+                filterLayout.setVisible(false);
                 break;
             case "Perform special operation":
                 findReplaceLayout.setManaged(false);
@@ -273,6 +291,10 @@ public class RegexProcessorScreen{
                 findReplaceLayout.setVisible(false);
                 frequencyLayout.setManaged(false);
                 frequencyLayout.setVisible(false);
+                sentenceLimitLayout.setManaged(false);
+                sentenceLimitLayout.setVisible(false);
+                filterLayout.setManaged(false);
+                filterLayout.setVisible(false);
                 break;
             case "Find And Replace All":
                 findReplaceLayout.setManaged(true);
@@ -281,6 +303,10 @@ public class RegexProcessorScreen{
                 findReplaceLayout.setVisible(true);
                 frequencyLayout.setManaged(false);
                 frequencyLayout.setVisible(false);
+                sentenceLimitLayout.setManaged(false);
+                sentenceLimitLayout.setVisible(false);
+                filterLayout.setManaged(false);
+                filterLayout.setVisible(false);
                 break;
             case "Top Frequent Words":
                 frequencyLayout.setManaged(true);
@@ -289,6 +315,10 @@ public class RegexProcessorScreen{
                 regexLayout.setManaged(false);
                 regexLayout.setVisible(false);
                 findReplaceLayout.setVisible(false);
+                sentenceLimitLayout.setManaged(false);
+                sentenceLimitLayout.setVisible(false);
+                filterLayout.setManaged(false);
+                filterLayout.setVisible(false);
                 break;
             case "Summarize Text":
                 frequencyLayout.setManaged(false);
@@ -299,6 +329,21 @@ public class RegexProcessorScreen{
                 findReplaceLayout.setVisible(false);
                 sentenceLimitLayout.setManaged(true);
                 sentenceLimitLayout.setVisible(true);
+                filterLayout.setManaged(false);
+                filterLayout.setVisible(false);
+                break;
+
+            case "Filter Lines by Keyword":
+                frequencyLayout.setManaged(false);
+                frequencyLayout.setVisible(false);
+                findReplaceLayout.setManaged(false);
+                regexLayout.setManaged(false);
+                regexLayout.setVisible(false);
+                findReplaceLayout.setVisible(false);
+                sentenceLimitLayout.setManaged(false);
+                sentenceLimitLayout.setVisible(false);
+                filterLayout.setManaged(true);
+                filterLayout.setVisible(true);
                 break;
             default:
                 frequencyLayout.setManaged(false);
@@ -309,6 +354,8 @@ public class RegexProcessorScreen{
                 findReplaceLayout.setVisible(false);
                 sentenceLimitLayout.setManaged(false);
                 sentenceLimitLayout.setVisible(false);
+                filterLayout.setManaged(false);
+                filterLayout.setVisible(false);
                 break;
         }
 
@@ -429,6 +476,19 @@ public class RegexProcessorScreen{
     
         String summary = textProcessor.summarizeText(text, sentenceLimit);
         resultArea.setText(summary.isEmpty() ? "No sentences found." : summary);
+    }
+    
+    public void filterLinesByKeyword() {
+        String text = inputArea.getText();
+        String keyword = filterField.getText();
+    
+        if (text.isEmpty() || keyword == null || keyword.isEmpty()) {
+            resultArea.setText("Please enter both text and keyword.");
+            return;
+        }
+    
+        List<String> filtered = textProcessor.filterLines(text, keyword);
+        resultArea.setText(filtered.isEmpty() ? "No matching lines found." : String.join("\n", filtered));
     }
     
 }
