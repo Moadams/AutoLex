@@ -28,11 +28,13 @@ public class RegexProcessorScreen{
     private TextField searchField;
     private TextField replacementField;
     private TextField frequencyField;
+    private TextField sentenceLimitField;
     private ComboBox<String> actionDropdown;
     private ComboBox<String> regexDropdown;
     private HBox findReplaceLayout;
     private VBox regexLayout;
     private VBox frequencyLayout;
+    private VBox sentenceLimitLayout;
     private TextArea inputArea;
     private TextArea resultArea;
     private CheckBox useCustomRegex;
@@ -51,7 +53,7 @@ public class RegexProcessorScreen{
         put("Remove Special Characters", "[^a-zA-Z0-9\\s]");
     }};
 
-    private static final List<String> regexActionsTemplate = List.of("Choose an action", "Perform special operation", "Find And Replace All","Word Count","Top Frequent Words" );
+    private static final List<String> regexActionsTemplate = List.of("Choose an action", "Perform special operation", "Find And Replace All","Word Count","Top Frequent Words","Summarize Text" );
 
     public RegexProcessorScreen(RegexProcessor regexProcessor, TextProcessor textProcessor) {
         this.regexProcessor = regexProcessor;
@@ -70,13 +72,14 @@ public class RegexProcessorScreen{
         createFindReplaceLayout();
         createRegexLayout();
         createFrequencyLayout();
+        createSentenceLimitLayout();
         resultArea = createResultArea();
         Button applyButton = createApplyButton();
         Button uploadButton = createUploadButton(inputArea);
         Button saveButton = createSaveButton(resultArea);
 
 
-        processorLayout.getChildren().addAll(title, inputArea, uploadButton, actionDropdown,frequencyLayout, findReplaceLayout, regexLayout, applyButton, resultArea, saveButton);
+        processorLayout.getChildren().addAll(title, inputArea, uploadButton, actionDropdown,frequencyLayout, sentenceLimitLayout, findReplaceLayout, regexLayout, applyButton, resultArea, saveButton);
         updateUIBasedOnOperation();
         return processorLayout;
     }
@@ -120,6 +123,9 @@ public class RegexProcessorScreen{
                     break;
                 case "Top Frequent Words":
                     performTopFrequentWords();
+                    break;
+                case "Summarize Text":
+                    performSummarizeText();
                     break;
                 default:
                     break;
@@ -228,6 +234,15 @@ public class RegexProcessorScreen{
         return frequencyLayout;
     }
 
+    public VBox createSentenceLimitLayout(){
+        sentenceLimitLayout = new VBox(5);;
+        sentenceLimitField = new TextField();
+        sentenceLimitField.setPromptText("Enter sentence limit. e.g 10");
+        sentenceLimitField.setPrefWidth(200);
+        sentenceLimitLayout.getChildren().addAll(sentenceLimitField);
+        return sentenceLimitLayout;
+    }
+
     public void createActionDropdown(){
         actionDropdown = new ComboBox<>();
         actionDropdown.getItems().addAll(regexActionsTemplate);
@@ -248,6 +263,8 @@ public class RegexProcessorScreen{
                 regexLayout.setVisible(false);
                 frequencyLayout.setManaged(false);
                 frequencyLayout.setVisible(false);
+                sentenceLimitLayout.setManaged(false);
+                sentenceLimitLayout.setVisible(false);
                 break;
             case "Perform special operation":
                 findReplaceLayout.setManaged(false);
@@ -264,6 +281,7 @@ public class RegexProcessorScreen{
                 findReplaceLayout.setVisible(true);
                 frequencyLayout.setManaged(false);
                 frequencyLayout.setVisible(false);
+                break;
             case "Top Frequent Words":
                 frequencyLayout.setManaged(true);
                 frequencyLayout.setVisible(true);
@@ -272,8 +290,25 @@ public class RegexProcessorScreen{
                 regexLayout.setVisible(false);
                 findReplaceLayout.setVisible(false);
                 break;
-        
+            case "Summarize Text":
+                frequencyLayout.setManaged(false);
+                frequencyLayout.setVisible(false);
+                findReplaceLayout.setManaged(false);
+                regexLayout.setManaged(false);
+                regexLayout.setVisible(false);
+                findReplaceLayout.setVisible(false);
+                sentenceLimitLayout.setManaged(true);
+                sentenceLimitLayout.setVisible(true);
+                break;
             default:
+                frequencyLayout.setManaged(false);
+                frequencyLayout.setVisible(false);
+                findReplaceLayout.setManaged(false);
+                regexLayout.setManaged(false);
+                regexLayout.setVisible(false);
+                findReplaceLayout.setVisible(false);
+                sentenceLimitLayout.setManaged(false);
+                sentenceLimitLayout.setVisible(false);
                 break;
         }
 
@@ -372,4 +407,28 @@ public class RegexProcessorScreen{
             resultArea.setText(resultBuilder.toString());
         }
     }
+
+    public void performSummarizeText() {
+        String text = inputArea.getText();
+        if (text.isEmpty()) {
+            resultArea.setText("Please enter text.");
+            return;
+        }
+    
+        int sentenceLimit = 3; // Default
+        try {
+            String limitInput = sentenceLimitField.getText();
+            if (!limitInput.isEmpty()) {
+                sentenceLimit = Integer.parseInt(limitInput);
+                if (sentenceLimit <= 0) throw new NumberFormatException();
+            }
+        } catch (NumberFormatException e) {
+            resultArea.setText("Invalid sentence limit. Please enter a positive number.");
+            return;
+        }
+    
+        String summary = textProcessor.summarizeText(text, sentenceLimit);
+        resultArea.setText(summary.isEmpty() ? "No sentences found." : summary);
+    }
+    
 }
