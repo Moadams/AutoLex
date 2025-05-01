@@ -36,7 +36,7 @@ public class FileProcessor{
      * @throws IOException if an error occurs while appending to the file
      */
     public void appendToFile(String filePath, String content) throws IOException {
-        Files.write(Path.of(filePath), content.getBytes(), StandardOpenOption.APPEND);
+        Files.write(Path.of(filePath), content.getBytes(),StandardOpenOption.CREATE, StandardOpenOption.APPEND);
     }
 
     /**
