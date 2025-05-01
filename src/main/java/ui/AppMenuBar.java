@@ -27,8 +27,8 @@ public class AppMenuBar {
         MenuItem saveItem = new MenuItem("Save");
         MenuItem exitItem = new MenuItem("Exit");
         exitItem.setOnAction(e-> appStage.close());
-
         openItem.setOnAction(e-> screen.uploadFile());
+        saveItem.setOnAction(e-> screen.saveFile());
 
         // add menu items to file menu
         fileMenu.getItems().addAll(openItem, saveItem, exitItem);

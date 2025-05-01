@@ -80,10 +80,10 @@ public class RegexProcessorScreen{
         createFilterLayout();
         resultArea = createResultArea();
         Button applyButton = createApplyButton();
-        Button saveButton = createSaveButton(resultArea);
+        
 
 
-        processorLayout.getChildren().addAll(title, inputArea, actionDropdown,frequencyLayout,filterLayout, sentenceLimitLayout, findReplaceLayout, regexLayout, applyButton, resultArea, saveButton);
+        processorLayout.getChildren().addAll(title, inputArea, actionDropdown,frequencyLayout,filterLayout, sentenceLimitLayout, findReplaceLayout, regexLayout, applyButton, resultArea);
         updateUIBasedOnOperation();
         return processorLayout;
     }
@@ -165,16 +165,7 @@ public class RegexProcessorScreen{
             }
     }
 
-    public Button createSaveButton(TextArea resultArea) {
-        Button saveButton = new Button("Save Output");
-        saveButton.setStyle("-fx-background-color: #102E50; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 8px 16px;");
-
-        saveButton.setOnAction(e -> {
-            saveFile();
-        });
-
-        return saveButton;
-    }
+    
 
     public void createFindReplaceLayout(){
         findReplaceLayout = new HBox(10);
