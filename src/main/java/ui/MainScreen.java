@@ -8,6 +8,7 @@ import javafx.scene.control.TabPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import main.java.controller.FileProcessor;
 import main.java.controller.RegexProcessor;
 import main.java.controller.TextProcessor;
 
@@ -15,6 +16,7 @@ import main.java.controller.TextProcessor;
 public class MainScreen{
     private RegexProcessor regexProcessor = new RegexProcessor();
     private TextProcessor textProcessor = new TextProcessor();
+    private FileProcessor fileProcessor = new FileProcessor();
 
     public void startMainScreen(Stage stage){
         stage.setTitle("AutoLex - Text Processor");
@@ -35,7 +37,7 @@ public class MainScreen{
         TabPane tabPane = new TabPane();
 
         // Add Regex Tab
-        RegexProcessorScreen regexUI = new RegexProcessorScreen(regexProcessor, textProcessor);
+        RegexProcessorScreen regexUI = new RegexProcessorScreen(regexProcessor, textProcessor, fileProcessor);
         Tab regexTab = new Tab("Regex Engine", regexUI.getLayout());
         
 
