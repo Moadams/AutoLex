@@ -1,14 +1,6 @@
 package main.java.ui;
 
-
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
+// JavaFX Imports
 import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
@@ -16,18 +8,33 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
+
+// External Imports
+import java.io.File;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+// Internal Imports
 import main.java.controller.FileProcessor;
 import main.java.controller.RegexProcessor;
 import main.java.controller.TextProcessor;
 import main.java.utils.LoggerUtility;
 
 public class RegexProcessorScreen{
+
+    // UI Components
     private TextField searchField;
     private TextField replacementField;
     private TextField frequencyField;
@@ -45,11 +52,13 @@ public class RegexProcessorScreen{
     private CheckBox useCustomRegex;
     private TextField customRegexField;
 
+    // Dependencies
     private final RegexProcessor regexProcessor;
     private final TextProcessor textProcessor;
     private final FileProcessor fileProcessor;
     private final LoggerUtility loggerUtility;
 
+    // Regex Templates
     private static final Map<String, String> regexTemplates = new LinkedHashMap<>() {{
         put("Extract Emails", "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}");
         put("Extract Phone Numbers", "\\+?\\d[\\d\\s()-]{8,}");
@@ -57,6 +66,7 @@ public class RegexProcessorScreen{
         put("Extract Numbers", "\\b\\d+\\b");
     }};
 
+    // Actions Templates
     private static final List<String> regexActionsTemplate = List.of("Choose an action", "Perform special operation", "Find And Replace All","Word Count","Top Frequent Words","Summarize Text","Filter Lines by Keyword" );
 
     public RegexProcessorScreen(RegexProcessor regexProcessor, TextProcessor textProcessor, FileProcessor fileProcessor) {
@@ -73,11 +83,12 @@ public class RegexProcessorScreen{
 
         Text title = new Text("Regex Processor");
         title.setStyle("-fx-font-size: 24px; -fx-fill: white; -fx-font-weight: bold;");
+        title.setFont(Font.font("Arial", 28));
+        title.setFill(Color.web("#2c3e50"));
+
         StackPane titleContainer = new StackPane(title);
         titleContainer.setStyle("-fx-background-color: linear-gradient(to right, #4CAF50, #2E7D32); " + "-fx-padding: 20px; ");
 
-        title.setFont(Font.font("Arial", 28));
-        title.setFill(Color.web("#2c3e50"));
 
         inputArea = createInputArea();
         createActionDropdown();
@@ -87,15 +98,16 @@ public class RegexProcessorScreen{
         createSentenceLimitLayout();
         createFilterLayout();
         resultArea = createResultArea();
-        Button applyButton = createApplyButton();
-        
 
+        Button applyButton = createApplyButton();
 
         processorLayout.getChildren().addAll(titleContainer, inputArea, actionDropdown,frequencyLayout,filterLayout, sentenceLimitLayout, findReplaceLayout, regexLayout, applyButton, resultArea);
+        
         updateUIBasedOnOperation();
         return processorLayout;
     }
 
+    // create ui components
     public TextArea createInputArea(){
 
         inputArea = new TextArea();
@@ -151,30 +163,6 @@ public class RegexProcessorScreen{
 
         return applyButton;
     }
-
-    
-
-    public void uploadFile(){
-        FileChooser fileChooser = new FileChooser();
-            fileChooser.setTitle("Open Text File");
-            fileChooser.getExtensionFilters().addAll(
-                new FileChooser.ExtensionFilter("Text Files", "*.txt")
-            );
-
-            File selectedFile = fileChooser.showOpenDialog(null);
-            if (selectedFile != null) {
-                try {
-                    String content = fileProcessor.readFile(selectedFile.getAbsolutePath());
-                    inputArea.setText(content);
-                }catch(IOException ex){
-                    loggerUtility.logError("Error reading file: ", ex);
-                    inputArea.setText("Error reading file: " + ex.getMessage());
-                }
-                
-            }
-    }
-
-    
 
     public void createFindReplaceLayout(){
         findReplaceLayout = new HBox(10);
@@ -247,100 +235,65 @@ public class RegexProcessorScreen{
         actionDropdown.setValue("Choose an action");
         actionDropdown.setOnAction(e -> updateUIBasedOnOperation());
     }
-   
-    public void updateUIBasedOnOperation(){
+
+    public void uploadFile(){
+        FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Open Text File");
+            fileChooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("Text Files", "*.txt")
+            );
+
+            File selectedFile = fileChooser.showOpenDialog(null);
+            if (selectedFile != null) {
+                try {
+                    String content = fileProcessor.readFile(selectedFile.getAbsolutePath());
+                    inputArea.setText(content);
+                }catch(IOException ex){
+                    loggerUtility.logError("Error reading file: ", ex);
+                    inputArea.setText("Error reading file: " + ex.getMessage());
+                }
+                
+            }
+    }
+
+    private void updateUIBasedOnOperation() {
         String selectedAction = actionDropdown.getValue();
-        
 
-        switch (selectedAction) {
-            case "Choose an action":
-                findReplaceLayout.setManaged(false);
-                regexLayout.setManaged(false);
-                findReplaceLayout.setVisible(false);
-                regexLayout.setVisible(false);
-                frequencyLayout.setManaged(false);
-                frequencyLayout.setVisible(false);
-                sentenceLimitLayout.setManaged(false);
-                sentenceLimitLayout.setVisible(false);
-                filterLayout.setManaged(false);
-                filterLayout.setVisible(false);
-                break;
-            case "Perform special operation":
-                findReplaceLayout.setManaged(false);
-                regexLayout.setManaged(true);
-                regexLayout.setVisible(true);
-                findReplaceLayout.setVisible(false);
-                frequencyLayout.setManaged(false);
-                frequencyLayout.setVisible(false);
-                sentenceLimitLayout.setManaged(false);
-                sentenceLimitLayout.setVisible(false);
-                filterLayout.setManaged(false);
-                filterLayout.setVisible(false);
-                break;
-            case "Find And Replace All":
-                findReplaceLayout.setManaged(true);
-                regexLayout.setManaged(false);
-                regexLayout.setVisible(false);
-                findReplaceLayout.setVisible(true);
-                frequencyLayout.setManaged(false);
-                frequencyLayout.setVisible(false);
-                sentenceLimitLayout.setManaged(false);
-                sentenceLimitLayout.setVisible(false);
-                filterLayout.setManaged(false);
-                filterLayout.setVisible(false);
-                break;
-            case "Top Frequent Words":
-                frequencyLayout.setManaged(true);
-                frequencyLayout.setVisible(true);
-                findReplaceLayout.setManaged(false);
-                regexLayout.setManaged(false);
-                regexLayout.setVisible(false);
-                findReplaceLayout.setVisible(false);
-                sentenceLimitLayout.setManaged(false);
-                sentenceLimitLayout.setVisible(false);
-                filterLayout.setManaged(false);
-                filterLayout.setVisible(false);
-                break;
-            case "Summarize Text":
-                frequencyLayout.setManaged(false);
-                frequencyLayout.setVisible(false);
-                findReplaceLayout.setManaged(false);
-                regexLayout.setManaged(false);
-                regexLayout.setVisible(false);
-                findReplaceLayout.setVisible(false);
-                sentenceLimitLayout.setManaged(true);
-                sentenceLimitLayout.setVisible(true);
-                filterLayout.setManaged(false);
-                filterLayout.setVisible(false);
-                break;
+        // All layout panes
+        Pane[] allLayouts = {
+            findReplaceLayout,
+            regexLayout,
+            frequencyLayout,
+            sentenceLimitLayout,
+            filterLayout
+        };
 
-            case "Filter Lines by Keyword":
-                frequencyLayout.setManaged(false);
-                frequencyLayout.setVisible(false);
-                findReplaceLayout.setManaged(false);
-                regexLayout.setManaged(false);
-                regexLayout.setVisible(false);
-                findReplaceLayout.setVisible(false);
-                sentenceLimitLayout.setManaged(false);
-                sentenceLimitLayout.setVisible(false);
-                filterLayout.setManaged(true);
-                filterLayout.setVisible(true);
-                break;
-            default:
-                frequencyLayout.setManaged(false);
-                frequencyLayout.setVisible(false);
-                findReplaceLayout.setManaged(false);
-                regexLayout.setManaged(false);
-                regexLayout.setVisible(false);
-                findReplaceLayout.setVisible(false);
-                sentenceLimitLayout.setManaged(false);
-                sentenceLimitLayout.setVisible(false);
-                filterLayout.setManaged(false);
-                filterLayout.setVisible(false);
-                break;
+        // Map operation to visible layouts
+        Map<String, List<Pane>> layoutVisibilityMap = new HashMap<>();
+        layoutVisibilityMap.put("Perform special operation", List.of(regexLayout));
+        layoutVisibilityMap.put("Find And Replace All", List.of(findReplaceLayout));
+        layoutVisibilityMap.put("Top Frequent Words", List.of(frequencyLayout));
+        layoutVisibilityMap.put("Summarize Text", List.of(sentenceLimitLayout));
+        layoutVisibilityMap.put("Filter Lines by Keyword", List.of(filterLayout));
+
+        // Hide all layouts by default
+        for (Pane layout : allLayouts) {
+            setLayoutVisible(layout, false);
         }
 
+        // Show layouts based on selected action
+        List<Pane> visibleLayouts = layoutVisibilityMap.getOrDefault(selectedAction, Collections.emptyList());
+        for (Pane layout : visibleLayouts) {
+            setLayoutVisible(layout, true);
+        }
     }
+
+    // Utility method
+    private void setLayoutVisible(Pane layout, boolean visible) {
+        layout.setManaged(visible);
+        layout.setVisible(visible);
+    }
+
 
     public void findAllMatches(){
         String text = inputArea.getText();
@@ -348,6 +301,7 @@ public class RegexProcessorScreen{
         
         // validate regex
         if (!regexProcessor.isValidRegex(regex)) {
+            loggerUtility.logError("Invalid regex", null);
             resultArea.setText("Invalid regex. Please check your input.");
             return;
         }
@@ -359,9 +313,11 @@ public class RegexProcessorScreen{
 
         try {
             List<String> matches = regexProcessor.findMatches(text, regex);
+            loggerUtility.logInfo( matches.size() + " matches found.");
             resultArea.setText(matches.size() > 0 ? String.join("\n", matches) : "No matches found.");
             
         } catch (Exception ex) {
+            loggerUtility.logError("Invalid regex or error occurred", ex);
             resultArea.setText("Invalid regex or error occurred. Please check your input.");
         }
     }
@@ -378,9 +334,11 @@ public class RegexProcessorScreen{
 
         try {
             String modifiedText = regexProcessor.replaceMatches(text, maintext, replacement);
+            loggerUtility.logInfo("Text modified");
             resultArea.setText(modifiedText);
             
         } catch (Exception ex) {
+            loggerUtility.logError("Invalid regex or error occurred", ex);
             resultArea.setText("Invalid regex or error occurred. Please check your input.");
         }
     }

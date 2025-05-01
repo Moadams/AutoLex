@@ -3,10 +3,13 @@ package main.java.utils;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import main.java.controller.FileProcessor;
 
 public class LoggerUtility {
+    private static final Logger logger = Logger.getLogger(LoggerUtility.class.getName());
     private static final String LOG_FILE = "logs/log.txt";
     private final FileProcessor fileProcessor;
 
@@ -14,26 +17,27 @@ public class LoggerUtility {
         this.fileProcessor = fileProcessor;
     }
 
-    public void log(String level, String message) {
+    public void log(Level level, String message) {
         try{
             String timeStamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-            String content = level + "" + timeStamp + ": " + message + "\n";
+            String content = level + ": " + timeStamp + ": " + message + "\n";
             fileProcessor.appendToFile(LOG_FILE, content);
             
         } catch (IOException e) {
-            System.err.println("Logging failed: " + e.getMessage());
+            logger.log(Level.SEVERE, "Logging failed: " + e.getMessage());
+            
         }
     }
 
     public void logInfo(String message) {
-        log("INFO", message);
+        log(Level.INFO, message);
     }
 
     public void logError(String message, Throwable throwable) {
-        log("ERROR", message + " | Exception: " + throwable.getMessage());
+        log(Level.SEVERE, message + " | Exception: " + throwable.getMessage());
     }
 
     public void logWarning(String message) {
-        log("WARNING", message);
+        log(Level.WARNING, message);
     }
 }
