@@ -16,8 +16,10 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 
+import java.io.BufferedReader;
 // External Imports
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
@@ -245,9 +247,14 @@ public class RegexProcessorScreen{
 
             File selectedFile = fileChooser.showOpenDialog(null);
             if (selectedFile != null) {
-                try {
-                    String content = fileProcessor.readFile(selectedFile.getAbsolutePath());
-                    inputArea.setText(content);
+                try(BufferedReader reader = new BufferedReader(new FileReader(selectedFile))) {
+                    StringBuilder content = new StringBuilder();
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        content.append(line).append("\n");
+                    }
+                    
+                    inputArea.setText(content.toString());
                 }catch(IOException ex){
                     loggerUtility.logError("Error reading file: ", ex);
                     inputArea.setText("Error reading file: " + ex.getMessage());
